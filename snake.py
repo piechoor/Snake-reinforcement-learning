@@ -5,6 +5,9 @@
 
 import pygame
 import random
+
+from constants import *
+from obstacles import *
 from enum import Enum
 from collections import namedtuple
 
@@ -22,19 +25,6 @@ class Direction(Enum):
 # nametuple - it resembles simplified class implementation 
 Point = namedtuple('Point', 'x, y')
 
-BLOCK_SIZE = 25 # size of an elementary game block
-GAME_SPEED = 10 #speed of the game, higher=faster
-# colors
-BLACK = (0,0,0)
-WHITE = (255,255,255)
-RED = (255,0,0)
-OUT_SNAKE = (0,200,0)
-IN_SNAKE = (0,150,0)
-FOOD_COL = RED
-# display dimentions (in blocks)
-BLOCK_W = 32
-BLOCK_H = 32
-
 # Main class containing game loop
 class SnakeGame:
 
@@ -43,8 +33,8 @@ class SnakeGame:
         self.w = w
         self.h = h
 
-        # init display
-        self.display = pygame.display.set_mode((self.w, self.h))
+        # init display /with a one block buffor
+        self.display = pygame.display.set_mode((self.w+DIS_BUFF, self.h+DIS_BUFF))
         pygame.display.set_caption('snakin\'') # setting display caption
         self.clock = pygame.time.Clock() # setting game clock
 
@@ -52,12 +42,17 @@ class SnakeGame:
         self.direction = Direction.RIGHT
 
         # snake's head starts in the middle of a display
-        self.head = Point(self.w/2, self.h/2)
+        self.head = Point((self.w/2)//BLOCK_SIZE*BLOCK_SIZE, (self.h/10)//BLOCK_SIZE*BLOCK_SIZE)
 
         # snake's body - lists represents blocks that create the snake
         self.snake = [self.head,
                      Point(self.head.x-BLOCK_SIZE, self.head.y),
                      Point(self.head.x-(2*BLOCK_SIZE), self.head.y)]
+
+        # defining obstacle map
+        self.obst = init_obst_map(self.w, self.h)
+
+        print(len(self.obst))
 
         self.score = 0
         self.food = None
@@ -73,6 +68,17 @@ class SnakeGame:
         # checking if food is inside the snake
         if self.food in self.snake:
             self._place_food()
+        if self.food in self.obst:
+            self._place_food()
+    
+    def _set_map(self):
+
+        for ob in self.obst:
+            pygame.draw.rect(self.display, YELLOW,
+                        pygame.Rect(ob.x, ob.y, BLOCK_SIZE, BLOCK_SIZE))
+            pygame.draw.rect(self.display, ORANGE, 
+                        pygame.Rect(ob.x+0.2*BLOCK_SIZE, 
+                        ob.y+0.2*BLOCK_SIZE, 0.6*BLOCK_SIZE, 0.6*BLOCK_SIZE))
 
     def play_step(self):
         # collecting user input
@@ -92,6 +98,15 @@ class SnakeGame:
                     self.direction = Direction.DOWN
 
         # move the snake
+
+        if self.head.x > self.w:
+            self.head = Point(0,self.head.y)
+        if self.head.x < 0:
+            self.head = Point(self.w,self.head.y)
+        if self.head.y > self.h:
+            self.head = Point(self.head.x,0)
+        if self.head.y < 0:
+            self.head = Point(self.head.x,self.h)
 
         self._move(self.direction)
         # inserting new head to snake's elements list
@@ -120,10 +135,14 @@ class SnakeGame:
         return game_over, self.score
 
     def _is_collision(self):
-        # hitting boundry 
-        if self.head.x > self.w - BLOCK_SIZE or self.head.x < 0 or self.head.y > self.h - BLOCK_SIZE or self.head.y < 0:
+        # hitting boundry
+        if BOUNDRY == True:
+            if self.head.x > self.w - BLOCK_SIZE or self.head.x < 0 or self.head.y > self.h - BLOCK_SIZE or self.head.y < 0:
+               return True
+        # hitting obstacle
+        if self.head in self.obst[:]:
             return True
-        # hitting itself
+        #hitting itself
         if self.head in self.snake[1:]:
             return True
 
@@ -139,10 +158,13 @@ class SnakeGame:
             pygame.draw.rect(self.display, IN_SNAKE, 
                         pygame.Rect(point.x+0.2*BLOCK_SIZE, 
                         point.y+0.2*BLOCK_SIZE, 0.6*BLOCK_SIZE, 0.6*BLOCK_SIZE))
-        
+
         pygame.draw.rect(self.display, FOOD_COL,
                     pygame.Rect(self.food.x, self.food.y, BLOCK_SIZE, BLOCK_SIZE))
         
+        # setting obstacles
+        self._set_map()
+
         # updating display to the screen
         pygame.display.flip()
 
