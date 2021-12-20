@@ -49,10 +49,9 @@ class SnakeGame:
                      Point(self.head.x-BLOCK_SIZE, self.head.y),
                      Point(self.head.x-(2*BLOCK_SIZE), self.head.y)]
 
-        # defining obstacle map
-        self.obst = init_obst_map(self.w, self.h)
-
-        print(len(self.obst))
+        if OBSTACLES == True:
+            # defining obstacle map
+            self.obst = init_obst_map(self.w, self.h)
 
         self.score = 0
         self.food = None
@@ -68,8 +67,11 @@ class SnakeGame:
         # checking if food is inside the snake
         if self.food in self.snake:
             self._place_food()
-        if self.food in self.obst:
-            self._place_food()
+
+        # checking if food is inside an obstacle
+        if OBSTACLES == True:
+            if self.food in self.obst:
+                self._place_food()
     
     def _set_map(self):
 
@@ -135,13 +137,16 @@ class SnakeGame:
         return game_over, self.score
 
     def _is_collision(self):
-        # hitting boundry
-        if BOUNDRY == True:
+
+        if OBSTACLES == True:
+            # hitting obstacle
+            if self.head in self.obst[:]:
+                return True
+        else:
+            # hitting boundry
             if self.head.x > self.w - BLOCK_SIZE or self.head.x < 0 or self.head.y > self.h - BLOCK_SIZE or self.head.y < 0:
-               return True
-        # hitting obstacle
-        if self.head in self.obst[:]:
-            return True
+                return True
+        
         #hitting itself
         if self.head in self.snake[1:]:
             return True
@@ -162,8 +167,9 @@ class SnakeGame:
         pygame.draw.rect(self.display, FOOD_COL,
                     pygame.Rect(self.food.x, self.food.y, BLOCK_SIZE, BLOCK_SIZE))
         
-        # setting obstacles
-        self._set_map()
+        if OBSTACLES == True:
+            # setting obstacles
+            self._set_map()
 
         # updating display to the screen
         pygame.display.flip()

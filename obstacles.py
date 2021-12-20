@@ -9,8 +9,13 @@ Point = namedtuple('Point', 'x, y')
 # MAP #0 - borders around the display
 # MAP #1 - windmill
 
+# adjasting value to blocks metric's
 def block_adj(val):
     return val//BLOCK_SIZE*BLOCK_SIZE
+
+# removing identical obstacles from the list
+def rem_dupl(xlist):
+    return list(dict.fromkeys(xlist))
 
 def init_obst_map(width, height):
     obstacles = []
@@ -40,4 +45,10 @@ def init_obst_map(width, height):
             else:
                 obstacles.append(Point(block_adj(mid.x+thr_w),i*BLOCK_SIZE))
 
-    return obstacles
+    if MAP_NUMBER == 2:
+        for i in range(int(width/BLOCK_SIZE)+1):
+            for j in range(int(height/BLOCK_SIZE)+1):
+                if i == j:
+                    obstacles.append(Point(i*BLOCK_SIZE,j*BLOCK_SIZE))
+                
+    return rem_dupl(obstacles)
