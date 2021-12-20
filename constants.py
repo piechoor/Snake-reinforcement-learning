@@ -8,6 +8,10 @@ GAME_SPEED = 10 #speed of the game, higher=faster
 BLOCK_W = 30
 BLOCK_H = 30
 
+# reward values
+REW_DIE = -10
+REW_EAT = 10
+
 # colors
 BLACK = (0,0,0)
 WHITE = (255,255,255)
