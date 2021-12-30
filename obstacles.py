@@ -1,4 +1,4 @@
-from constants import *
+from const import *
 from collections import namedtuple
 
 # Object representing a point, implementation is done

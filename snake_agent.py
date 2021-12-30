@@ -7,7 +7,7 @@ import pygame
 import random
 import numpy as np
 
-from constants import *
+from const import *
 from obstacles import *
 from enum import Enum
 from collections import namedtuple
@@ -106,6 +106,7 @@ class SnakeGame:
                     self.direction = Direction.RIGHT
                 elif event.key == (pygame.K_DOWN or event.key == pygame.K_s) and self.direction != Direction.UP:
                     self.direction = Direction.DOWN
+            break
 
         # move the snake
         # checking if snake hits boundry - if yes teleports
@@ -127,7 +128,7 @@ class SnakeGame:
         reward = 0
         game_over = False
         # if we collide or snake does nothing too long
-        if self._is_collision() or self.frame_iteration > 100*len(self.snake):
+        if self.is_collision() or self.frame_iteration > 100*len(self.snake):
             game_over = True
             reward = REW_DIE
             return reward, game_over, self.score
@@ -151,22 +152,22 @@ class SnakeGame:
 
     # checks if theres a collision with a given point,
     # if it wasnt given we check with the snake's head
-    def _is_collision(self, point=None):
+    def is_collision(self, point=None):
         
         if point == None:
             point = self.head
 
         if OBSTACLES == True:
             # hitting obstacle
-            if self.point in self.obst[:]:
+            if point in self.obst[:]:
                 return True
         else:
             # hitting boundry
-            if self.point.x > self.w - BLOCK_SIZE or self.point.x < 0 or self.point.y > self.h - BLOCK_SIZE or self.point.y < 0:
+            if point.x > self.w - BLOCK_SIZE or point.x < 0 or point.y > self.h - BLOCK_SIZE or point.y < 0:
                 return True
         
         #hitting itself
-        if self.point in self.snake[1:]:
+        if point in self.snake[1:]:
             return True
 
         #no collision
@@ -209,6 +210,7 @@ class SnakeGame:
             idx = (idx-1)%4
             new_direction = clockwise[idx]
 
+        self.direction = new_direction
 
         # extracting coordinates
         x = self.head.x
@@ -226,4 +228,3 @@ class SnakeGame:
         # updating head position
         self.head = Point(x, y)
 
-pygame.quit()

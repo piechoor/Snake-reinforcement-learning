@@ -6,7 +6,7 @@
 import pygame
 import random
 
-from constants import *
+from const import *
 from obstacles import *
 from enum import Enum
 from collections import namedtuple
@@ -98,6 +98,9 @@ class SnakeGame:
                     self.direction = Direction.RIGHT
                 elif event.key == (pygame.K_DOWN or event.key == pygame.K_s) and self.direction != Direction.UP:
                     self.direction = Direction.DOWN
+            # gotta break, otherwise takes more actions and can create 
+            # changing fg left to right (hitting neck with head)
+            #break
 
         # move the snake
 
@@ -114,12 +117,6 @@ class SnakeGame:
         # inserting new head to snake's elements list
         self.snake.insert(0, self.head)
 
-        # checking if theres a collision with snake or boundary game ends
-        game_over = False
-        if self._is_collision():
-            game_over = True
-            return game_over, self.score
-
         # placing new food if one was eaten
         if self.head == self.food:
             # if snake ate a food nothing changes in snake
@@ -128,6 +125,12 @@ class SnakeGame:
         else:
             # if snake didnt eat, the last part of snake is taken
             self.snake.pop()
+
+        # checking if theres a collision with snake or boundary game ends
+        game_over = False
+        if self._is_collision():
+            game_over = True
+            return game_over, self.score
 
         # updating ui and clock
         self._update_ui()
@@ -149,6 +152,7 @@ class SnakeGame:
         
         #hitting itself
         if self.head in self.snake[1:]:
+            print(self.head, self.snake)
             return True
 
         #no collision
@@ -181,12 +185,16 @@ class SnakeGame:
         # moving snake by blocksize
         if direction == Direction.RIGHT:
             x += BLOCK_SIZE
+            print('RIGHT')
         elif direction == Direction.LEFT:
             x -= BLOCK_SIZE
+            print('LEFT')
         elif direction == Direction.UP:
             y -= BLOCK_SIZE
+            print('UP')
         elif direction == Direction.DOWN:
             y += BLOCK_SIZE
+            print('DOWN')
 
         # updating head position
         self.head = Point(x, y)
